@@ -1,0 +1,211 @@
+name: Compile Drivers
+
+on:
+  # Allow to trigger action manually
+  workflow_dispatch:
+    inputs:
+      kernel_version:
+        description: 'Kernel Version'
+        required: true
+        default: '6.17.1'
+        type: string
+      drivers:
+        description: 'Drivers'
+        required: true
+        default: 'all'
+        type: string
+
+jobs:
+  build_kernel:
+    runs-on: self-hosted
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 1
+
+    - name: Install dependencies
+      run: apt-get update && apt-get -y install build-essential flex bison libncurses-dev libssl-dev libelf-dev bc dwarves kmod squashfs-tools rsync git cpio xz-utils iucode-tool
+
+    - name: Compile Drivers
+      run: |
+        # Set Variables and create directories
+        export WORK_DIR=${{ github.workspace }}
+        export BUILD_DIR=${WORK_DIR}/build
+        export KERNEL_V=${{ github.event.inputs.kernel_version }}
+        rm -rf /lib/modules /lib/firmware
+        mkdir -p $BUILD_DIR $WORK_DIR/$KERNEL_V $BUILD_DIR/$KERNEL_V /lib/modules /lib/firmware
+
+        # Get Kernel JSON
+        KERNEL_JSON=$(curl -s --request GET \
+            --url "https://api.github.com/repos/ich777/mos-kernel/releases?per_page=50" \
+            --header "Authorization: Bearer ${{ secrets.MOS_TOKEN }}" \
+            --header "X-GitHub-Api-Version: 2022-11-28")
+
+        # Get Kernel archive Asset IDs
+        ASSET_KERNEL=$(echo $KERNEL_JSON | jq --arg kernel $KERNEL_V-mos -r '.[] | select(.tag_name == $kernel) | .assets[] | select(.name | startswith($kernel) and endswith(".tar.xz")) | .id')
+        ASSET_KERNEL_MD5=$(echo $KERNEL_JSON | jq --arg kernel $KERNEL_V-mos -r '.[] | select(.tag_name == $kernel) | .assets[] | select(.name | startswith($kernel) and endswith(".tar.xz.md5")) | .id')
+
+        # Define download asset function including md5 check
+        download_asset() {
+          echo "Downloading file: $2"
+          curl --progress-bar -L \
+            --header "Authorization: Bearer ${{ secrets.MOS_TOKEN }}" \
+            --header "Accept: application/octet-stream" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            --output "$WORK_DIR/$2" \
+            "https://api.github.com/repos/ich777/mos-kernel/releases/assets/$1"
+        
+          if [[ "$2" == *.md5 ]]; then
+            echo "Checking md5"
+            if [ "$(md5sum ${2%.*} | awk '{print $1}')" == "$(cat $WORK_DIR/$2)" ] ; then
+              echo "md5 OK"
+            else
+              echo "md5 ERROR"
+              exit 1
+            fi
+          fi
+        }
+
+        # Download assets
+        download_asset "$ASSET_KERNEL" "$KERNEL_V-mos.tar.xz"
+        download_asset "$ASSET_KERNEL_MD5" "$KERNEL_V-mos.tar.xz.md5"
+
+        # Extract precompiled Kernel
+        tar -C $BUILD_DIR/$KERNEL_V -xf $WORK_DIR/$KERNEL_V-mos.tar.xz
+
+        # Install modules
+        cd $BUILD_DIR/$KERNEL_V
+        export KERNEL_DIR=$BUILD_DIR/$KERNEL_V
+        make modules_install -j$(nproc --all)
+
+        # Get build order
+        ORDER=$(cat $WORK_DIR/build_order)
+
+        if [ "${{ github.event.inputs.drivers }}" == "all" ] ; then
+          # Loop through folders
+          for folder in $ORDER
+          do
+            # Execute build scripts
+            for script in $(ls -1 $WORK_DIR/build_scripts/$folder/*)
+            do
+              chmod +x $script
+              $script
+            done
+          done
+        else
+          DRIVERS=${{ github.event.inputs.drivers }}
+          for script in $(ls -1 $WORK_DIR/build_scripts/$DRIVERS/*)
+          do
+            chmod +x $script
+            $script
+          done
+        fi
+    
+    #----------------------------------------------------------------------------------
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.event.inputs.kernel_version }}-mos
+        release_name: "${{ github.event.inputs.kernel_version }}-mos"
+        body: |
+          Custom MOS Kernel and Drivers: ${{ github.event.inputs.kernel_version }}-mos
+
+          ### Release contents:
+          [Kernel](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/?h=v${{ github.event.inputs.kernel_version }}): ${{ github.event.inputs.kernel_version }}
+          [Firmware](https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/commit/?id=${{ env.FW_COMMIT }}): ${{ env.FW_COMMIT_SHORT }}
+
+          Microcode:
+          [AMD](https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/tree/amd-ucode?id=${{ env.FW_COMMIT }}): ${{ env.FW_COMMIT_SHORT }}
+          [Intel](https://github.com/intel/Intel-Linux-Processor-Microcode-Data-Files/releases/tag/${{ env.INTEL_MICROCODE }}): ${{ env.INTEL_MICROCODE }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Kernel to Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/image
+        asset_name: image
+        asset_content_type: application/vnd.debian.binary-package
+
+    - name: Upload md5 to Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/image.md5
+        asset_name: image.md5
+        asset_content_type: text/plain
+
+    - name: Upload Drivers to Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/drivers
+        asset_name: drivers
+        asset_content_type: application/vnd.debian.binary-package
+
+    - name: Upload Drivers md5 to Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/drivers.md5
+        asset_name: drivers.md5
+        asset_content_type: text/plain
+
+    - name: Upload Microcode to Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/microcode
+        asset_name: microcode
+        asset_content_type: application/vnd.debian.binary-package
+
+    - name: Upload Microcode md5 to Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/microcode.md5
+        asset_name: microcode.md5
+        asset_content_type: text/plain
+
+    - name: Upload Kernel to Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/${{ github.event.inputs.kernel_version }}-mos.tar.xz
+        asset_name: ${{ github.event.inputs.kernel_version }}-mos.tar.xz
+        asset_content_type: application/x-xz-compressed-tar
+
+    - name: Upload Kernel md5 to Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/${{ github.event.inputs.kernel_version }}-mos.tar.xz.md5
+        asset_name: ${{ github.event.inputs.kernel_version }}-mos.tar.xz.md5
+        asset_content_type: text/plain
+
+    - name: Cleanup
+      if: always()
+      run: rm -rf ${{ github.workspace }}/* ${{ github.workspace }}/.* /lib/modules /lib/firmware
