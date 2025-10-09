@@ -88,7 +88,7 @@ jobs:
           for folder in $ORDER
           do
             # Execute build scripts
-            for script in $(ls -1 $WORK_DIR/build_scripts/$folder/*)
+            for script in $(ls -1 $WORK_DIR/build_scripts/$folder/*.sh)
             do
               chmod +x $script
               $script
@@ -96,7 +96,7 @@ jobs:
           done
         else
           DRIVERS=${{ github.event.inputs.drivers }}
-          for script in $(ls -1 $WORK_DIR/build_scripts/$DRIVERS/*)
+          for script in $(ls -1 $WORK_DIR/build_scripts/$DRIVERS/*.sh)
           do
             chmod +x $script
             $script
