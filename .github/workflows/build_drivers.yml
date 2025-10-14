@@ -102,109 +102,18 @@ jobs:
             $script
           done
         fi
-    
-    #----------------------------------------------------------------------------------
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
+        echo "KERNEL_V=$KERNEL_V
+        PACKAGES_DIR=$WORK_DIR/$KERNEL_V" >> $GITHUB_ENV
+
+    - name: Create and Upload Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: ${{ env.PACKAGES_DIR }}/*
+        overwrite_files: true
+        name: "Drivers for Kernel release ${{ env.KERNEL_V }}-mos"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.event.inputs.kernel_version }}-mos
-        release_name: "${{ github.event.inputs.kernel_version }}-mos"
-        body: |
-          Custom MOS Kernel and Drivers: ${{ github.event.inputs.kernel_version }}-mos
-
-          ### Release contents:
-          [Kernel](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/?h=v${{ github.event.inputs.kernel_version }}): ${{ github.event.inputs.kernel_version }}
-          [Firmware](https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/commit/?id=${{ env.FW_COMMIT }}): ${{ env.FW_COMMIT_SHORT }}
-
-          Microcode:
-          [AMD](https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/tree/amd-ucode?id=${{ env.FW_COMMIT }}): ${{ env.FW_COMMIT_SHORT }}
-          [Intel](https://github.com/intel/Intel-Linux-Processor-Microcode-Data-Files/releases/tag/${{ env.INTEL_MICROCODE }}): ${{ env.INTEL_MICROCODE }}
-        draft: false
-        prerelease: false
-
-    - name: Upload Kernel to Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ github.workspace }}/image
-        asset_name: image
-        asset_content_type: application/vnd.debian.binary-package
-
-    - name: Upload md5 to Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ github.workspace }}/image.md5
-        asset_name: image.md5
-        asset_content_type: text/plain
-
-    - name: Upload Drivers to Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ github.workspace }}/drivers
-        asset_name: drivers
-        asset_content_type: application/vnd.debian.binary-package
-
-    - name: Upload Drivers md5 to Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ github.workspace }}/drivers.md5
-        asset_name: drivers.md5
-        asset_content_type: text/plain
-
-    - name: Upload Microcode to Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ github.workspace }}/microcode
-        asset_name: microcode
-        asset_content_type: application/vnd.debian.binary-package
-
-    - name: Upload Microcode md5 to Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ github.workspace }}/microcode.md5
-        asset_name: microcode.md5
-        asset_content_type: text/plain
-
-    - name: Upload Kernel to Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ github.workspace }}/${{ github.event.inputs.kernel_version }}-mos.tar.xz
-        asset_name: ${{ github.event.inputs.kernel_version }}-mos.tar.xz
-        asset_content_type: application/x-xz-compressed-tar
-
-    - name: Upload Kernel md5 to Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ github.workspace }}/${{ github.event.inputs.kernel_version }}-mos.tar.xz.md5
-        asset_name: ${{ github.event.inputs.kernel_version }}-mos.tar.xz.md5
-        asset_content_type: text/plain
 
     - name: Cleanup
       if: always()
