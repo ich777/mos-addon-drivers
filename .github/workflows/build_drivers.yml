@@ -116,6 +116,7 @@ jobs:
         files: ${{ env.PACKAGES_DIR }}/*
         overwrite_files: true
         name: "Drivers for Kernel release ${{ env.KERNEL_V }}-mos"
+        body: "Addon driver releases for MOS"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
