@@ -18,6 +18,8 @@ on:
 jobs:
   build_kernel:
     runs-on: self-hosted
+    permissions:
+      contents: write
 
     steps:
     - name: Checkout repository
