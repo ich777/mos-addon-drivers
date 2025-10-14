@@ -17,11 +17,11 @@ git checkout main
 DRIVER_V_PKG="$(git log -1 --format="%cs" | sed 's/-//g')"
 
 # Patch for 6.13+
-patch -p1 < $BUILD_DIR/$DRIVER_NAME/coral_6.13.0.patch
+patch -p1 < $WORK_DIR/build_scripts/$DRIVER_NAME/coral_6.13.0.patch
 
 # Build driver
 cd $DRIVER_BUILD_DIR/$DRIVER_NAME/src
-make -j$(nproc --all) KDIR=$KERNEL_DIR
+make -j$(nproc --all) -C $KERNEL_DIR
 
 # Create directory, move modules to package directory and compress modules
 mkdir -p $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/extra
