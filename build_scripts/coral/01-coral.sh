@@ -21,7 +21,7 @@ patch -p1 < $WORK_DIR/build_scripts/$DRIVER_NAME/coral_6.13.0.patch
 
 # Build driver
 cd $DRIVER_BUILD_DIR/$DRIVER_NAME/src
-make -j$(nproc --all) -C $KERNEL_DIR
+make -C $KERNEL_DIR M=$DRIVER_BUILD_DIR/$DRIVER_NAME/src modules
 
 # Create directory, move modules to package directory and compress modules
 mkdir -p $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/extra
