@@ -109,6 +109,7 @@ jobs:
     - name: Create and Upload Release
       uses: softprops/action-gh-release@v2
       with:
+        tag_name: ${{ env.KERNEL_V }}-mos
         files: ${{ env.PACKAGES_DIR }}/*
         overwrite_files: true
         name: "Drivers for Kernel release ${{ env.KERNEL_V }}-mos"
