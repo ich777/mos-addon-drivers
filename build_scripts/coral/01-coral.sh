@@ -13,7 +13,7 @@ cd $DRIVER_BUILD_DIR
 # Clone from Github, checkout master and get latest commit date
 git clone --depth 1 https://github.com/google/gasket-driver $DRIVER_NAME
 cd $DRIVER_BUILD_DIR/$DRIVER_NAME
-git checkout master
+git checkout main
 DRIVER_V_PKG="$(git log -1 --format="%cs" | sed 's/-//g')"
 
 # Patch for 6.13+
