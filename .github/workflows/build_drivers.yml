@@ -14,6 +14,11 @@ on:
         required: true
         default: 'all'
         type: string
+      overwrite_files:
+        description: 'Overwrite existing releases'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   build_kernel:
@@ -114,7 +119,7 @@ jobs:
       with:
         tag_name: ${{ env.KERNEL_V }}-mos
         files: ${{ env.PACKAGES_DIR }}/*
-        overwrite_files: true
+        overwrite_files: ${{ github.event.inputs.overwrite_files }}
         name: "Drivers for Kernel release ${{ env.KERNEL_V }}-mos"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
