@@ -37,13 +37,7 @@ CMD bash -c "cd ${BUILD_DIR} && \
   cp /opt/config.toml $PACKAGE_DIR/etc/nvidia-container-runtime/config.toml && \
   cat $DRIVER_BUILD_DIR/$DRIVER_NAME/LICENSE* >> $PACKAGE_DIR/etc/nvidia-container-runtime/LICENSE && \
   cd ${BUILD_DIR}/nvidia-container-toolkit-${TOOLKIT_VERSION} && \
-  cat > $PACKAGE_DIR/DEBIAN/control << 'EOF'
-Package: nvidia-container-toolkit
-Version: $TOOLKIT_VERSION
-Architecture: amd64
-Maintainer: ich777
-Description: nvidia-container-toolkit for MOS
-EOF && \
+  echo \"Package: nvidia-container-toolkit\nVersion: $TOOLKIT_VERSION\nArchitecture: amd64\nMaintainer: ich777\nDescription: nvidia-container-toolkit for MOS\" > $PACKAGE_DIR/DEBIAN/control && \
   cd ${BUILD_DIR} && \
   dpkg-deb --build package $BUILD_DIR/nvidia-container-toolkit_${TOOLKIT_VERSION}-1+mos_amd64.deb && \
   md5sum $BUILD_DIR/nvidia-container-toolkit_${TOOLKIT_VERSION}-1+mos_amd64.deb | awk '{print $1}' > $BUILD_DIR/nvidia-container-toolkit_${TOOLKIT_VERSION}-1+mos_amd64.deb.md5"
