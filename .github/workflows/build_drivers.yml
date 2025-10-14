@@ -75,6 +75,7 @@ jobs:
         download_asset "$ASSET_KERNEL_MD5" "$KERNEL_V-mos.tar.xz.md5"
 
         # Extract precompiled Kernel
+        echo "Extracting Kernel..."
         tar -C $BUILD_DIR/$KERNEL_V -xf $WORK_DIR/$KERNEL_V-mos.tar.xz
 
         # Install modules
