@@ -11,9 +11,9 @@ mkdir $DRIVER_BUILD_DIR
 cd $DRIVER_BUILD_DIR
 
 # Get latest versions
-LIBNVIDIA_CONTAINER_JSON="$(curl -u ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} -s https://api.github.com/repos/ich777/mos-libnvidia-container/releases/latest)"
+LIBNVIDIA_CONTAINER_JSON="$(curl -u ${GH_ACTOR}:${GITHUB_TOKEN} -s https://api.github.com/repos/ich777/mos-libnvidia-container/releases/latest)"
 LIBNVIDIA_CONTAINER_V="$(echo "$LIBNVIDIA_CONTAINER_JSON" | jq -r '.tag_name' | sed 's/^v//')"
-CONTAINER_TOOLKIT_JSON="$(curl -u ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} -s https://api.github.com/repos/ich777/mos-nvidia-container-toolkit/releases/latest)"
+CONTAINER_TOOLKIT_JSON="$(curl -u ${GH_ACTOR}:${GITHUB_TOKEN} -s https://api.github.com/repos/ich777/mos-nvidia-container-toolkit/releases/latest)"
 CONTAINER_TOOLKIT_V="$(echo "$CONTAINER_TOOLKIT_JSON" | jq -r '.tag_name' | sed 's/^v//')"
 
 # For now just compile latest driver
@@ -23,7 +23,7 @@ DRIVER_V_PKG="$(wget -qO- https://us.download.nvidia.com/XFree86/Linux-x86_64/la
 component_download() {
   echo "Downloading: ${1}_${2}-1+mos_amd64.deb${4}"
   curl --progress-bar -L \
-    --header "Authorization: Bearer ${{ secrets.MOS_TOKEN }}" \
+    --header "Authorization: Bearer ${MOS_TOKEN}" \
     --header "Accept: application/octet-stream" \
     --header "X-GitHub-Api-Version: 2022-11-28" \
     --output "$DRIVER_BUILD_DIR/$1_$2-1+mos_amd64.deb$4" \
