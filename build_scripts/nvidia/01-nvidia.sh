@@ -11,9 +11,9 @@ mkdir $DRIVER_BUILD_DIR
 cd $DRIVER_BUILD_DIR
 
 # Get latest versions
-LIBNVIDIA_CONTAINER_JSON="$(curl -u ${GH_ACTOR}:${GITHUB_TOKEN} -s https://api.github.com/repos/ich777/mos-libnvidia-container/releases/latest)"
+LIBNVIDIA_CONTAINER_JSON="$(curl -u ${GH_ACTOR}:${MOS_TOKEN} -s https://api.github.com/repos/ich777/mos-libnvidia-container/releases/latest)"
 LIBNVIDIA_CONTAINER_V="$(echo "$LIBNVIDIA_CONTAINER_JSON" | jq -r '.tag_name' | sed 's/^v//')"
-CONTAINER_TOOLKIT_JSON="$(curl -u ${GH_ACTOR}:${GITHUB_TOKEN} -s https://api.github.com/repos/ich777/mos-nvidia-container-toolkit/releases/latest)"
+CONTAINER_TOOLKIT_JSON="$(curl -u ${GH_ACTOR}:${MOS_TOKEN} -s https://api.github.com/repos/ich777/mos-nvidia-container-toolkit/releases/latest)"
 CONTAINER_TOOLKIT_V="$(echo "$CONTAINER_TOOLKIT_JSON" | jq -r '.tag_name' | sed 's/^v//')"
 
 # For now just compile latest driver
