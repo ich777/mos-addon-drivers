@@ -31,6 +31,10 @@ jobs:
       run: apt-get update && apt-get -y install build-essential flex bison libncurses-dev libssl-dev libelf-dev bc dwarves kmod squashfs-tools rsync git cpio xz-utils iucode-tool
 
     - name: Compile Drivers
+      env:
+        GH_ACTOR: ${{ github.actor }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        MOS_TOKEN: ${{ secrets.MOS_TOKEN }}
       run: |
         # Set Variables and create directories
         export WORK_DIR=${{ github.workspace }}
@@ -85,11 +89,6 @@ jobs:
 
         # Get build order
         ORDER=$(cat $WORK_DIR/build_order)
-
-        # Set variables
-        export GH_ACTOR=${{ github.actor }}
-        export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-        export MOS_TOKEN=${{ secrets.MOS_TOKEN }}
 
         if [ "${{ github.event.inputs.drivers }}" == "all" ] ; then
           # Loop through folders
