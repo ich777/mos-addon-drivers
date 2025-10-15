@@ -33,7 +33,6 @@ jobs:
     - name: Compile Drivers
       env:
         GH_ACTOR: ${{ github.actor }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         MOS_TOKEN: ${{ secrets.MOS_TOKEN }}
       run: |
         # Set Variables and create directories
