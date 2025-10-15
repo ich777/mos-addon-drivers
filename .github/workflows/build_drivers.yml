@@ -86,6 +86,11 @@ jobs:
         # Get build order
         ORDER=$(cat $WORK_DIR/build_order)
 
+        # Set variables
+        export GH_ACTOR=${{ github.actor }}
+        export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+        export MOS_TOKEN=${{ secrets.MOS_TOKEN }}
+
         if [ "${{ github.event.inputs.drivers }}" == "all" ] ; then
           # Loop through folders
           for folder in $ORDER
