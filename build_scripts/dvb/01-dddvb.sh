@@ -40,6 +40,6 @@ EOF
 
 # Create Debian package and md5 checksum
 cd $DRIVER_BUILD_DIR
-dpkg-deb --build package $DRIVER_OUTPUT_DIR/${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb
-md5sum $DRIVER_OUTPUT_DIR/${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb | awk '{print $1}' > $DRIVER_OUTPUT_DIR/${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb.md5
+dpkg-deb --build package $DRIVER_OUTPUT_DIR/dvb-${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb
+md5sum $DRIVER_OUTPUT_DIR/dvb-${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb | awk '{print $1}' > $DRIVER_OUTPUT_DIR/dvb-${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb.md5
 exit 0
