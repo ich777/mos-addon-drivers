@@ -17,7 +17,7 @@ git checkout master
 DRIVER_V_PKG="$(git log -1 --format="%cs" | sed 's/-//g')"
 
 # Build driver and install modules to package dir
-make -j$(nproc --all) M=$DRIVER_BUILD_DIR/sriov -C ${DATA_DIR}/linux-$UNAME
+make -j$(nproc --all) M=$DRIVER_BUILD_DIR/sriov -C $KERNEL_DIR
 
 # Create directory, move modules to package directory and compress modules
 mkdir -p $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/gpu/drm/i915
