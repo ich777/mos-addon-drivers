@@ -20,12 +20,13 @@ DRIVER_V_PKG="$(git log -1 --format="%cs" | sed 's/-//g')"
 make -j$(nproc --all) M=$DRIVER_BUILD_DIR/sriov -C $KERNEL_DIR
 
 # Create directory, move modules to package directory and compress modules
-mkdir -p $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/gpu/drm/i915
-cp $DRIVER_BUILD_DIR/sriov/i915.ko $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/gpu/drm/i915/
+mkdir -p $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/gpu/drm/{i915,xe}
+cp $DRIVER_BUILD_DIR/sriov/drivers/gpu/drm/i915/*.ko $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/gpu/drm/i915/
+cp $DRIVER_BUILD_DIR/sriov/drivers/gpu/drm/xe/xe.ko $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/gpu/drm/xe/
 while read -r module
 do
   xz --check=crc32 --lzma2 $module
-done < <(find $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/gpu/drm/i915 -name "*.ko")
+done < <(find $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/gpu/drm/ -name "*.ko")
 
 # Add License
 mkdir -p $DRIVER_PACKAGE_DIR/usr/share/doc/$DRIVER_NAME
@@ -46,7 +47,7 @@ cd $DRIVER_BUILD_DIR
 dpkg-deb --build package $DRIVER_OUTPUT_DIR/${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb
 
 # Check filesize
-MIN_SIZE=920000
+MIN_SIZE=2000000
 PACKAGE_SIZE=$(stat -c%s $DRIVER_OUTPUT_DIR/${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb)
 if [ "$PACKAGE_SIZE" -lt "$MIN_SIZE" ] ; then
   echo "ERROR: Package filesize to low, deleting package: ${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb"
