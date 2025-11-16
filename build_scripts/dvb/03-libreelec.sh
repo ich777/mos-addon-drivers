@@ -22,7 +22,7 @@ do
   echo "$line" >> "$KERNEL_DIR/.config"
 done < "$WORK_DIR/build_scripts/dvb/libreelec_config"
 cd $KERNEL_DIR
-while true; do echo -e "n"; sleep 0.5s; done | make oldconfig
+yes n | make oldconfig
 
 # Compile modules
 make -j$(nproc --all)
