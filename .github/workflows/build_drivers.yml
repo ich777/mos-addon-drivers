@@ -14,6 +14,14 @@ on:
         required: true
         default: 'all'
         type: string
+      branch:
+        description: 'Branch'
+        required: false
+        type: string
+      version:
+        description: 'Version'
+        required: false
+        type: string
 
 jobs:
   build_drivers:
@@ -39,6 +47,10 @@ jobs:
         export WORK_DIR=${{ github.workspace }}
         export BUILD_DIR=${WORK_DIR}/build
         export KERNEL_V=${{ github.event.inputs.kernel_version }}
+        DRIVERS=${{ github.event.inputs.drivers }}
+        export BUILD_MODE=${{ github.event.inputs.drivers }}
+        export BRANCH=${{ github.event.inputs.branch }}
+        export DRV_VERSION=${{ github.event.inputs.version }}
         rm -rf /lib/modules /lib/firmware
         mkdir -p $BUILD_DIR $WORK_DIR/$KERNEL_V $BUILD_DIR/$KERNEL_V /lib/modules /lib/firmware
 
@@ -89,7 +101,7 @@ jobs:
         # Get build order
         ORDER=$(cat $WORK_DIR/build_order)
 
-        if [ "${{ github.event.inputs.drivers }}" == "all" ] ; then
+        if [ "$BUILD_MODE" == "all" ] ; then
           # Loop through folders
           for folder in $ORDER
           do
@@ -101,11 +113,17 @@ jobs:
             done
           done
         else
-          DRIVERS=${{ github.event.inputs.drivers }}
-          for script in $(ls -1 $WORK_DIR/build_scripts/$DRIVERS/*.sh)
+          if [ ! -z "$BRANCH" ] ; then
+            # If branch is not empty get only the specific branch script
+            SCRIPTS=$(ls -1 $WORK_DIR/build_scripts/$DRIVERS/*.sh | grep "$BRANCH")
+          else
+            # If branch is empty get all scripts
+            SCRIPTS=$(ls -1 $WORK_DIR/build_scripts/$DRIVERS/*.sh)
+          fi
+          for script in $SCRIPTS
           do
             chmod +x $script
-            $script
+            $script "$DRV_VERSION"
           done
         fi
 
