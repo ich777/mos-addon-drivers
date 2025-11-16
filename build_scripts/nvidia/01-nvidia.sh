@@ -16,8 +16,12 @@ LIBNVIDIA_CONTAINER_V="$(echo "$LIBNVIDIA_CONTAINER_JSON" | jq -r '.tag_name' | 
 CONTAINER_TOOLKIT_JSON="$(curl -u ${GH_ACTOR}:${MOS_TOKEN} -s https://api.github.com/repos/ich777/mos-nvidia-container-toolkit/releases/latest)"
 CONTAINER_TOOLKIT_V="$(echo "$CONTAINER_TOOLKIT_JSON" | jq -r '.tag_name' | sed 's/^v//')"
 
-# For now just compile latest driver
-DRIVER_V_PKG="$(wget -qO- https://us.download.nvidia.com/XFree86/Linux-x86_64/latest.txt | awk '{print $1}')"
+# Grab either latest version or passed over driver version
+if [ -z "$1" ] ; then
+  DRIVER_V_PKG="$(wget -qO- https://us.download.nvidia.com/XFree86/Linux-x86_64/latest.txt | awk '{print $1}')"
+else
+  DRIVER_V_PKG=$1
+fi
 
 # Define application_download and md5 check function
 component_download() {
