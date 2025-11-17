@@ -21,13 +21,16 @@ cd $DRIVER_BUILD_DIR/$DRIVER_NAME
 make -C $KERNEL_DIR M=$DRIVER_BUILD_DIR/$DRIVER_NAME modules CONFIG_UBSAN=n
 
 # Create directory, move modules to package directory and compress modules
-mkdir -p $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/md $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/scsi/raid6
+mkdir -p $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/md $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/scsi/raid6 $DRIVER_PACKAGE_DIR/usr/local/bin
 cp $DRIVER_BUILD_DIR/$DRIVER_NAME/md_nonraid/md-nonraid.ko $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/md/
 cp $DRIVER_BUILD_DIR/$DRIVER_NAME/raid6/nonraid6_pq.ko $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/scsi/raid6/
 while read -r module
 do
   xz --check=crc32 --lzma2 $module
 done < <(find $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel -name "*.ko")
+
+# Add nmdctl
+wget -q -O $DRIVER_PACKAGE_DIR/usr/local/bin/nmdctl https://raw.githubusercontent.com/qvr/nonraid/main/tools/nmdctl
 
 # Add License
 mkdir -p $DRIVER_PACKAGE_DIR/usr/share/doc/$DRIVER_NAME
