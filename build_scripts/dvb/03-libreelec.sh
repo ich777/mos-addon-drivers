@@ -14,7 +14,7 @@ cd $DRIVER_BUILD_DIR
 # Make sure that modules are compatible and install them again
 cd $KERNEL_DIR
 make -j$(nproc --all)
-make modules_install -j$(nproc --all
+make modules_install -j$(nproc --all)
 
 # Read necessary configs from file and make sure make oldconfig succeeds
 while read -r line
