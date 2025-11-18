@@ -12,6 +12,7 @@ mkdir $DRIVER_BUILD_DIR
 cd $DRIVER_BUILD_DIR
 
 # Make sure that modules are compatible and install them again
+cd $KERNEL_DIR
 make -j$(nproc --all)
 make modules_install -j$(nproc --all
 
