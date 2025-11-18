@@ -96,7 +96,6 @@ jobs:
         # Install modules
         cd $BUILD_DIR/$KERNEL_V
         export KERNEL_DIR=$BUILD_DIR/$KERNEL_V
-        make -j$(nproc --all)
         make modules_install -j$(nproc --all)
 
         # Get build order
