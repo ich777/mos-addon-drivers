@@ -38,6 +38,7 @@ rsync -rvcm --compare-dest=/lib/modules/${KERNEL_V}-mos/ $DRIVER_BUILD_DIR/temp-
 # Remove unecessary filese from modules directory
 cd $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos
 rm $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/* 2>/dev/null
+rm -rf $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/kernel
 find . -depth -exec rmdir {} \;  2>/dev/null
 
 # Create firmware directory and extract firmware files
