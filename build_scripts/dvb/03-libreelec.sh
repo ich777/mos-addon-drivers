@@ -11,6 +11,10 @@ DRIVER_V_PKG=1.5.0
 mkdir $DRIVER_BUILD_DIR
 cd $DRIVER_BUILD_DIR
 
+# Make sure that modules are compatible and install them again
+make -j$(nproc --all)
+make modules_install -j$(nproc --all
+
 # Read necessary configs from file and make sure make oldconfig succeeds
 while read -r line
 do
