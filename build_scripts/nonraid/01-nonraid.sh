@@ -29,8 +29,8 @@ do
   xz --check=crc32 --lzma2 $module
 done < <(find $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel -name "*.ko")
 
-# Add nmdctl
-wget -q -O $DRIVER_PACKAGE_DIR/usr/local/bin/nmdctl https://raw.githubusercontent.com/qvr/nonraid/main/tools/nmdctl
+# Add nmdctl - partially supported in MOS API now
+#wget -q -O $DRIVER_PACKAGE_DIR/usr/local/bin/nmdctl https://raw.githubusercontent.com/qvr/nonraid/main/tools/nmdctl
 
 # Add License
 mkdir -p $DRIVER_PACKAGE_DIR/usr/share/doc/$DRIVER_NAME
@@ -51,7 +51,7 @@ cd $DRIVER_BUILD_DIR
 dpkg-deb --build package $DRIVER_OUTPUT_DIR/${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb
 
 # Check filesize
-MIN_SIZE=35000
+MIN_SIZE=25000
 PACKAGE_SIZE=$(stat -c%s $DRIVER_OUTPUT_DIR/${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb)
 if [ "$PACKAGE_SIZE" -lt "$MIN_SIZE" ] ; then
   echo "ERROR: Package filesize to low, deleting package: ${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb"
