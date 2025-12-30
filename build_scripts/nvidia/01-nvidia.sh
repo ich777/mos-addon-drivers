@@ -18,10 +18,13 @@ CONTAINER_TOOLKIT_V="$(echo "$CONTAINER_TOOLKIT_JSON" | jq -r '.tag_name' | sed 
 
 # Grab either latest version or passed over driver version
 if [ -z "$1" ] ; then
-  DRIVER_V_PKG="$(wget -qO- https://us.download.nvidia.com/XFree86/Linux-x86_64/latest.txt | awk '{print $1}')"
+  DRIVER_V_PKG="$(wget -qO- https://download.nvidia.com/XFree86/Linux-x86_64/latest.txt | awk '{print $1}')"
 else
   DRIVER_V_PKG=$1
 fi
+
+# Grab legacy driver version 580.x
+LEGACY_DRV_V_PKG=$(wget -qO- https://download.nvidia.com/XFree86/Linux-x86_64/ | grep "href='" | cut -d ">" -f3- | cut -d '/' -f1 | grep "^580" | sort -V | tail -1)
 
 # Define application_download and md5 check function
 component_download() {
@@ -142,8 +145,12 @@ EOF
   fi
 }
 
+# Compile newest proprietary and opensource Nvidia driver
 for branch in "proprietary" "opensource"; do
   nvidia_driver "$DRIVER_V_PKG" "$branch"
 done
+
+# Compile legacy driver version 580.x
+nvidia_driver "$LEGACY_DRV_V_PKG" "$proprietary"
 
 exit 0
