@@ -145,12 +145,23 @@ EOF
   fi
 }
 
+# Get major driver version
+DRV_V_PKG_MAJOR=$(echo $DRIVER_V_PKG | grep -oE '^[0-9]+')
+if [[ "$DRV_V_PKG_MAJOR" -ge "590" ]]; then
+  DRV_BRANCHES="opensource"
+else
+  DRV_BRANCHES="proprietary opensource"
+fi
+
 # Compile newest proprietary and opensource Nvidia driver
-for branch in "proprietary" "opensource"; do
+for branch in $DRV_BRANCHES 
+do
   nvidia_driver "$DRIVER_V_PKG" "$branch"
 done
 
 # Compile legacy driver version 580.x
-nvidia_driver "$LEGACY_DRV_V_PKG" "$proprietary"
+if [[ "$DRV_V_PKG_MAJOR" -lt "590" ]]; then
+  nvidia_driver "$LEGACY_DRV_V_PKG" "proprietary"
+fi
 
 exit 0
