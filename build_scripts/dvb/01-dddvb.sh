@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set variables
-DRIVER_NAME=digtial-devices
+DRIVER_NAME=digital-devices
 DRIVER_BUILD_DIR=$BUILD_DIR/$DRIVER_NAME
 DRIVER_PACKAGE_DIR=$DRIVER_BUILD_DIR/package
 DRIVER_OUTPUT_DIR=$WORK_DIR/$KERNEL_V
