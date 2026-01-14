@@ -16,12 +16,8 @@ LIBNVIDIA_CONTAINER_V="$(echo "$LIBNVIDIA_CONTAINER_JSON" | jq -r '.tag_name' | 
 CONTAINER_TOOLKIT_JSON="$(curl -u ${GH_ACTOR}:${MOS_TOKEN} -s https://api.github.com/repos/ich777/mos-nvidia-container-toolkit/releases/latest)"
 CONTAINER_TOOLKIT_V="$(echo "$CONTAINER_TOOLKIT_JSON" | jq -r '.tag_name' | sed 's/^v//')"
 
-# Grab either latest version or passed over driver version
-if [ -z "$1" ] ; then
-  DRIVER_V_PKG="$(wget -qO- https://download.nvidia.com/XFree86/Linux-x86_64/latest.txt | awk '{print $1}')"
-else
-  DRIVER_V_PKG=$1
-fi
+# Grab latest version
+OPENSOURCE_DRV_V_PKG=$(wget -qO- https://download.nvidia.com/XFree86/Linux-x86_64/ | grep "href='" | cut -d ">" -f3- | cut -d '/' -f1 | grep -E '^[0-9]+\.[0-9]+' | awk -F'.' '$1 >= 590' | sort -V | tail -1)
 
 # Grab legacy driver version 580.x
 LEGACY_DRV_V_PKG=$(wget -qO- https://download.nvidia.com/XFree86/Linux-x86_64/ | grep "href='" | cut -d ">" -f3- | cut -d '/' -f1 | grep "^580" | sort -V | tail -1)
@@ -145,23 +141,10 @@ EOF
   fi
 }
 
-# Get major driver version
-DRV_V_PKG_MAJOR=$(echo $DRIVER_V_PKG | grep -oE '^[0-9]+')
-if [[ "$DRV_V_PKG_MAJOR" -ge "590" ]]; then
-  DRV_BRANCHES="opensource"
-else
-  DRV_BRANCHES="proprietary opensource"
-fi
-
-# Compile newest proprietary and opensource Nvidia driver
-for branch in $DRV_BRANCHES 
-do
-  nvidia_driver "$DRIVER_V_PKG" "$branch"
-done
+# Compile latest driver
+nvidia_driver "$OPENSOURCE_DRV_V_PKG" "opensource"
 
 # Compile legacy driver version 580.x
-if [[ "$DRV_V_PKG_MAJOR" -lt "590" ]]; then
-  nvidia_driver "$LEGACY_DRV_V_PKG" "proprietary"
-fi
+nvidia_driver "$LEGACY_DRV_V_PKG" "proprietary"
 
 exit 0
