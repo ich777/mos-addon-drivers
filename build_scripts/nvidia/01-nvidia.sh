@@ -120,7 +120,7 @@ nvidia_driver() {
   mkdir $DRIVER_PACKAGE_DIR/DEBIAN
   cat > $DRIVER_PACKAGE_DIR/DEBIAN/control << EOF
 Package: $DRIVER_NAME-${2}-driver
-Version: $DRIVER_V_PKG
+Version: $1
 Architecture: amd64
 Maintainer: ich777
 Description: ${DRIVER_NAME}-${2} drivers for MOS
