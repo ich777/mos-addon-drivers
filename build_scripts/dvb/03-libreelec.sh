@@ -70,6 +70,7 @@ MIN_SIZE=290000
 PACKAGE_SIZE=$(stat -c%s $DRIVER_OUTPUT_DIR/dvb-${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb)
 if [ "$PACKAGE_SIZE" -lt "$MIN_SIZE" ] ; then
   echo "ERROR: Package filesize to low, deleting package: dvb-${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb"
+  discord_push_notification "$DRIVER_NAME" "Compilation failed for $DRIVER_V_PKG" "1"
   rm -f $DRIVER_OUTPUT_DIR/dvb-${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb
 else
   md5sum $DRIVER_OUTPUT_DIR/dvb-${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb | awk '{print $1}' > $DRIVER_OUTPUT_DIR/dvb-${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb.md5
