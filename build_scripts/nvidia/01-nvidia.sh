@@ -135,6 +135,7 @@ EOF
   PACKAGE_SIZE=$(stat -c%s $DRIVER_OUTPUT_DIR/${DRIVER_NAME}-${2}_${1}-1+mos_amd64.deb)
   if [ "$PACKAGE_SIZE" -lt "$MIN_SIZE" ] ; then
     echo "ERROR: Package filesize to low, deleting package: ${DRIVER_NAME}-${2}_${1}-1+mos_amd64.deb"
+    discord_push_notification "$DRIVER_NAME-${2}" "Compilation failed for $1" "1"
     rm -f $DRIVER_OUTPUT_DIR/${DRIVER_NAME}-${2}_${1}-1+mos_amd64.deb
   else
     md5sum $DRIVER_OUTPUT_DIR/${DRIVER_NAME}-${2}_${1}-1+mos_amd64.deb | awk '{print $1}' > $DRIVER_OUTPUT_DIR/${DRIVER_NAME}-${2}_${1}-1+mos_amd64.deb.md5
