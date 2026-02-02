@@ -101,6 +101,29 @@ jobs:
         # Get build order
         ORDER=$(cat $WORK_DIR/build_order)
 
+        # Discord notification function
+        discord_push_notification() {
+          if [ $3 -ge 1 ]; then
+            COLOR=16711680
+          else
+            COLOR=65280
+          fi
+
+          data=$(cat <<EOF
+        {
+          "embeds": [{
+            "title": "${1}",
+            "description": "${2}",
+            "color": ${COLOR}
+          }]
+        }
+        EOF
+        )
+          curl -H "Content-Type: application/json" -d "$data" "${{ secrets.DISCORD_WEBHOOK_URL }}"
+        }
+        # Export function to be able to execute it from subshells
+        export -f discord_push_notification
+
         if [ "$BUILD_MODE" == "all" ] ; then
           # Loop through folders
           for folder in $ORDER
