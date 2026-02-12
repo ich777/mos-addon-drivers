@@ -60,6 +60,12 @@ find $DRIVER_BUILD_DIR/mxa_manager/x86_64 -type d -empty -delete
 
 cp -R $DRIVER_BUILD_DIR/mxa_manager/x86_64/* $DRIVER_PACKAGE_DIR/
 
+# Add libgomp1
+cd $DRIVER_BUILD_DIR
+apt-get update
+apt-get -y download libgomp1 || true
+dpkg --instdir=$DRIVER_PACKAGE_DIR/ -i $DRIVER_BUILD_DIR/libgomp1_*.deb
+
 # Create Debian control file
 mkdir $DRIVER_PACKAGE_DIR/DEBIAN
 cat > $DRIVER_PACKAGE_DIR/DEBIAN/control << EOF
