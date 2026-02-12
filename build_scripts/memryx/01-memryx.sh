@@ -25,7 +25,7 @@ make -j$(nproc --all)
 
 # Copy Kernel module and compress it
 mkdir -p $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/updates
-cp $DRIVER_BUILD_DIR/$DRIVER_NAME/kdriver/linux/pcie/memx_cascade_plus_pcie.ko $DRIVER_PACKAGE_DIR/lib/modules/${UNAME}/updates/
+cp $DRIVER_BUILD_DIR/$DRIVER_NAME/kdriver/linux/pcie/memx_cascade_plus_pcie.ko $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/updates/
 
 while read -r line
 do
