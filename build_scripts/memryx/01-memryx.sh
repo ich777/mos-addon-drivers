@@ -21,7 +21,12 @@ cp $DRIVER_BUILD_DIR/$DRIVER_NAME/kdriver/include/* $DRIVER_BUILD_DIR/$DRIVER_NA
 
 # Build driver
 cd $DRIVER_BUILD_DIR/$DRIVER_NAME/kdriver/linux/pcie
-make -j$(nproc --all)
+make -C $KERNEL_DIR M=$DRIVER_BUILD_DIR/$DRIVER_NAME/kdriver/linux/pcie \
+  KCPPFLAGS="-I$DRIVER_BUILD_DIR/$DRIVER_NAME/kdriver/include" \
+  EXTRA_CFLAGS="-I$DRIVER_BUILD_DIR/$DRIVER_NAME/kdriver/include" \
+  modules -j$(nproc --all)
+
+MODULE_BUILD=$?
 
 # Copy Kernel module and compress it
 mkdir -p $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/updates
@@ -80,8 +85,12 @@ EOF
 cd $DRIVER_BUILD_DIR
 dpkg-deb --build package $DRIVER_OUTPUT_DIR/${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb
 
-# Check filesize
-MIN_SIZE=3000
+# Check filesize - depending if module build was successful
+if [ "$MODULE_BUILD" = "0" ] ; then
+  MIN_SIZE=950000
+else
+  MIN_SIZE=9999999999
+fi
 PACKAGE_SIZE=$(stat -c%s $DRIVER_OUTPUT_DIR/${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb)
 if [ "$PACKAGE_SIZE" -lt "$MIN_SIZE" ] ; then
   echo "ERROR: Package filesize to low, deleting package: ${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb"
