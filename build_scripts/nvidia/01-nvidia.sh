@@ -75,31 +75,63 @@ nvidia_driver() {
   chmod +x $DRIVER_BUILD_DIR/NVIDIA_v${1}.run
   mkdir -p $DRIVER_PACKAGE_DIR/usr/lib/xorg/modules/{drivers,extensions} $DRIVER_PACKAGE_DIR/usr/lib/x86_64-linux-gnu $DRIVER_PACKAGE_DIR/usr/bin $DRIVER_PACKAGE_DIR/etc $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/video $DRIVER_PACKAGE_DIR/lib/firmware
 
-  # Compile driver
-  $DRIVER_BUILD_DIR/NVIDIA_v${1}.run --kernel-source-path=$KERNEL_DIR \
-    --no-precompiled-interface \
-    --disable-nouveau \
-    --x-prefix=$DRIVER_PACKAGE_DIR/usr \
-    --x-library-path=lib/x86_64-linux-gnu \
-    --x-module-path=$DRIVER_PACKAGE_DIR/usr/lib/xorg/modules \
-    --opengl-prefix=$DRIVER_PACKAGE_DIR/usr \
-    --installer-prefix=$DRIVER_PACKAGE_DIR/usr \
-    --utility-prefix=$DRIVER_PACKAGE_DIR/usr \
-    --documentation-prefix=$DRIVER_PACKAGE_DIR/usr \
-    --application-profile-path=share/nvidia \
-    --proc-mount-point=$DRIVER_PACKAGE_DIR/proc \
-    --kernel-install-path=$DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/video \
-    --compat32-prefix=$DRIVER_PACKAGE_DIR/usr \
-    --compat32-libdir=lib/i386-linux-gnu \
-    --install-compat32-libs \
-    --no-x-check \
-    --no-nouveau-check \
-    --no-systemd \
-    --skip-depmod \
-    --skip-module-load \
-    --no-backup \
-    --j$(nproc --all) \
-    ${NV_PROPRIETARY} --silent
+  # Workaround for Kernel 6.19+ & OpenSource driver 590.48.01
+  if [[ "$KERNEL_V" == 6.19.* && "$1" == 590.48.01 && "$2" == "opensource" ]]; then
+    $DRIVER_BUILD_DIR/NVIDIA_v${1}.run --extract-only
+    cd $DRIVER_BUILD_DIR/NVIDIA-Linux-x86_64-*
+    patch -p1 < $WORK_DIR/build_scripts/$DRIVER_NAME/cachyos-kernel-6.19.patch
+    # Compile driver
+    $DRIVER_BUILD_DIR/NVIDIA-Linux-x86_64-*/nvidia-installer --kernel-source-path=$KERNEL_DIR \
+      --no-precompiled-interface \
+      --disable-nouveau \
+      --x-prefix=$DRIVER_PACKAGE_DIR/usr \
+      --x-library-path=lib/x86_64-linux-gnu \
+      --x-module-path=$DRIVER_PACKAGE_DIR/usr/lib/xorg/modules \
+      --opengl-prefix=$DRIVER_PACKAGE_DIR/usr \
+      --installer-prefix=$DRIVER_PACKAGE_DIR/usr \
+      --utility-prefix=$DRIVER_PACKAGE_DIR/usr \
+      --documentation-prefix=$DRIVER_PACKAGE_DIR/usr \
+      --application-profile-path=share/nvidia \
+      --proc-mount-point=$DRIVER_PACKAGE_DIR/proc \
+      --kernel-install-path=$DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/video \
+      --compat32-prefix=$DRIVER_PACKAGE_DIR/usr \
+      --compat32-libdir=lib/i386-linux-gnu \
+      --install-compat32-libs \
+      --no-x-check \
+      --no-nouveau-check \
+      --no-systemd \
+      --skip-depmod \
+      --skip-module-load \
+      --no-backup \
+      --j$(nproc --all) \
+      ${NV_PROPRIETARY} --silent
+  else
+    # Compile driver
+    $DRIVER_BUILD_DIR/NVIDIA_v${1}.run --kernel-source-path=$KERNEL_DIR \
+      --no-precompiled-interface \
+      --disable-nouveau \
+      --x-prefix=$DRIVER_PACKAGE_DIR/usr \
+      --x-library-path=lib/x86_64-linux-gnu \
+      --x-module-path=$DRIVER_PACKAGE_DIR/usr/lib/xorg/modules \
+      --opengl-prefix=$DRIVER_PACKAGE_DIR/usr \
+      --installer-prefix=$DRIVER_PACKAGE_DIR/usr \
+      --utility-prefix=$DRIVER_PACKAGE_DIR/usr \
+      --documentation-prefix=$DRIVER_PACKAGE_DIR/usr \
+      --application-profile-path=share/nvidia \
+      --proc-mount-point=$DRIVER_PACKAGE_DIR/proc \
+      --kernel-install-path=$DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/video \
+      --compat32-prefix=$DRIVER_PACKAGE_DIR/usr \
+      --compat32-libdir=lib/i386-linux-gnu \
+      --install-compat32-libs \
+      --no-x-check \
+      --no-nouveau-check \
+      --no-systemd \
+      --skip-depmod \
+      --skip-module-load \
+      --no-backup \
+      --j$(nproc --all) \
+      ${NV_PROPRIETARY} --silent
+  fi
 
   # Add missing files
   if [ -d /lib/firmware/nvidia ]; then
