@@ -20,13 +20,14 @@ DRIVER_V_PKG="$(git log -1 --format="%cs" | sed 's/-//g')"
 make -j$(nproc --all) M=$DRIVER_BUILD_DIR/sriov -C $KERNEL_DIR
 
 # Create directory, move modules to package directory and compress modules
-mkdir -p $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/gpu/drm/{i915,xe}
+mkdir -p $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/gpu/drm/{i915,xe} $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/updates/compat
 cp $DRIVER_BUILD_DIR/sriov/drivers/gpu/drm/i915/*.ko $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/gpu/drm/i915/
 cp $DRIVER_BUILD_DIR/sriov/drivers/gpu/drm/xe/xe.ko $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/gpu/drm/xe/
+cp $DRIVER_BUILD_DIR/sriov/compat/intel_sriov_compat.ko $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/updates/compat/intel_sriov_compat.ko
 while read -r module
 do
   xz --check=crc32 --lzma2 $module
-done < <(find $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/kernel/drivers/gpu/drm/ -name "*.ko")
+done < <(find $DRIVER_PACKAGE_DIR/lib/modules/${KERNEL_V}-mos/ -name "*.ko")
 
 # Add License
 mkdir -p $DRIVER_PACKAGE_DIR/usr/share/doc/$DRIVER_NAME
