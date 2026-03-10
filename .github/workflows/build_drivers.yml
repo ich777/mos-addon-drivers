@@ -61,8 +61,8 @@ jobs:
             --header "X-GitHub-Api-Version: 2022-11-28")
 
         # Get Kernel archive Asset IDs
-        ASSET_KERNEL=$(echo $KERNEL_JSON | jq --arg kernel $KERNEL_V-mos -r '.[] | select(.tag_name == $kernel) | .assets[] | select(.name | startswith($kernel) and endswith(".tar.xz")) | .id')
-        ASSET_KERNEL_MD5=$(echo $KERNEL_JSON | jq --arg kernel $KERNEL_V-mos -r '.[] | select(.tag_name == $kernel) | .assets[] | select(.name | startswith($kernel) and endswith(".tar.xz.md5")) | .id')
+        ASSET_KERNEL=$(echo $KERNEL_JSON | jq --arg kernel $KERNEL_V-mos -r '.[] | select(.tag_name == $kernel) | .assets[] | select(.name | startswith($kernel) and endswith("amd64.tar.xz")) | .id')
+        ASSET_KERNEL_MD5=$(echo $KERNEL_JSON | jq --arg kernel $KERNEL_V-mos -r '.[] | select(.tag_name == $kernel) | .assets[] | select(.name | startswith($kernel) and endswith("amd64.tar.xz.md5")) | .id')
 
         # Define download asset function including md5 check
         download_asset() {
