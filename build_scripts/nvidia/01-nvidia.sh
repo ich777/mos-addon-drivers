@@ -43,14 +43,14 @@ component_download() {
 cd $DRIVER_BUILD_DIR
 if [ ! -f $DRIVER_BUILD_DIR/libnvidia-container_${LIBNVIDIA_CONTAINER_V}-1+mos_amd64.deb ]; then
   # Get Asset IDs
-  LIBNVIDIA_DEB=$(echo $LIBNVIDIA_CONTAINER_JSON | jq -r  '.assets[] | select(.name | startswith("libnvidia-container") and endswith(".deb")) | .id')
-  LIBNVIDIA_DEB_MD5=$(echo $LIBNVIDIA_CONTAINER_JSON | jq -r  '.assets[] | select(.name | startswith("libnvidia-container") and endswith(".deb.md5")) | .id')
+  LIBNVIDIA_DEB=$(echo $LIBNVIDIA_CONTAINER_JSON | jq -r  '.assets[] | select(.name | startswith("libnvidia-container") and endswith("amd64.deb")) | .id')
+  LIBNVIDIA_DEB_MD5=$(echo $LIBNVIDIA_CONTAINER_JSON | jq -r  '.assets[] | select(.name | startswith("libnvidia-container") and endswith("amd64.deb.md5")) | .id')
   component_download "libnvidia-container" "$LIBNVIDIA_CONTAINER_V" "$LIBNVIDIA_DEB"
   component_download "libnvidia-container" "$LIBNVIDIA_CONTAINER_V" "$LIBNVIDIA_DEB_MD5" ".md5"
 fi
 if [ ! -f $DRIVER_BUILD_DIR/nvidia-container-toolkit_${CONTAINER_TOOLKIT_V}-1+mos_amd64.deb ]; then
-  CONTAINER_TOOLKIT_DEB=$(echo $CONTAINER_TOOLKIT_JSON | jq -r  '.assets[] | select(.name | startswith("nvidia-container-toolkit") and endswith(".deb")) | .id')
-  CONTAINER_TOOLKIT_DEB_MD5=$(echo $CONTAINER_TOOLKIT_JSON | jq -r  '.assets[] | select(.name | startswith("nvidia-container-toolkit") and endswith(".deb.md5")) | .id')
+  CONTAINER_TOOLKIT_DEB=$(echo $CONTAINER_TOOLKIT_JSON | jq -r  '.assets[] | select(.name | startswith("nvidia-container-toolkit") and endswith("amd64.deb")) | .id')
+  CONTAINER_TOOLKIT_DEB_MD5=$(echo $CONTAINER_TOOLKIT_JSON | jq -r  '.assets[] | select(.name | startswith("nvidia-container-toolkit") and endswith("amd64.deb.md5")) | .id')
   component_download "nvidia-container-toolkit" "$CONTAINER_TOOLKIT_V" "$CONTAINER_TOOLKIT_DEB"
   component_download "nvidia-container-toolkit" "$CONTAINER_TOOLKIT_V" "$CONTAINER_TOOLKIT_DEB_MD5" ".md5"
 fi
