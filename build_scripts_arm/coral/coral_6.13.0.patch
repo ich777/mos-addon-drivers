@@ -1,0 +1,185 @@
+From e28e7485f83685799304281ea6ab4043194f5fbe Mon Sep 17 00:00:00 2001
+From: Nicola Ferralis <feranick@hotmail.com>
+Date: Wed, 8 May 2024 15:30:41 -0400
+Subject: [PATCH 1/5] Updated debian/changelog for 18.2
+
+---
+ debian/changelog | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/debian/changelog b/debian/changelog
+index 63d8a09..5d552db 100644
+--- a/debian/changelog
++++ b/debian/changelog
+@@ -1,3 +1,13 @@
++gasket-dkms (1.0-18.2) unstable; urgency=medium
++
++  * Rebuilt for latest commits:
++    - Amend use of class_create() for kernels >= 6.4
++    - Fixes google#14 and google#15 by replacing the version-based check for DMA_BUF necessity.
++      Solves incompatibility with backports in 5.1x.x (RedHat/Debian) kernels.
++    - fixed eventfd_signal for kernels >= 6.8
++
++ -- Nicola Ferralis <feranick@hotmail.com>  Wed, 08 May 2024 15:26:09 -0400
++
+ gasket-dkms (1.0-18) unstable; urgency=low
+ 
+   * Import DMA_BUF symbol namespace for kernels >= 5.16.
+
+From 45ba710990a88c9b8554f8647fe04fd04b9f8623 Mon Sep 17 00:00:00 2001
+From: Nicola Ferralis <feranick@hotmail.com>
+Date: Mon, 4 Aug 2025 14:47:17 -0400
+Subject: [PATCH 2/5] Removed call for  REMAKE_INITRD, unsupported in kernel
+ 6.14+
+
+---
+ debian/changelog        | 6 ++++++
+ debian/gasket-dkms.dkms | 1 -
+ 2 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/debian/changelog b/debian/changelog
+index 5d552db..d3abe82 100644
+--- a/debian/changelog
++++ b/debian/changelog
+@@ -1,3 +1,9 @@
++gasket-dkms (1.0-18.3) noble; urgency=medium
++
++  * Remove deprecated call REMAKE_INITRD, unsupported in kernel 6.14+
++
++ -- Nicola Ferralis <feranick@hotmail.com>  Mon, 04 Aug 2025 14:41:16 -0400
++
+ gasket-dkms (1.0-18.2) unstable; urgency=medium
+ 
+   * Rebuilt for latest commits:
+diff --git a/debian/gasket-dkms.dkms b/debian/gasket-dkms.dkms
+index 3985078..5eb2e5a 100644
+--- a/debian/gasket-dkms.dkms
++++ b/debian/gasket-dkms.dkms
+@@ -5,4 +5,3 @@ BUILT_MODULE_NAME[1]="apex"
+ DEST_MODULE_LOCATION[0]="/updates/dkms"
+ DEST_MODULE_LOCATION[1]="/updates/dkms"
+ AUTOINSTALL="YES"
+-REMAKE_INITRD="YES"
+
+From 4c2d29598c01488c4b038e847d235fa2be81b1f7 Mon Sep 17 00:00:00 2001
+From: Nicola Ferralis <feranick@hotmail.com>
+Date: Mon, 4 Aug 2025 14:51:13 -0400
+Subject: [PATCH 3/5] Add dh-dkms dependency to build package
+
+---
+ debian/control | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/debian/control b/debian/control
+index ba07931..4dd491c 100644
+--- a/debian/control
++++ b/debian/control
+@@ -1,6 +1,6 @@
+ Source: gasket-dkms
+ Maintainer: Coral <coral-support@google.com>
+-Build-Depends: debhelper (>= 9), dkms
++Build-Depends: debhelper (>= 9), dkms, dh-dkms
+ Homepage: https://coral.withgoogle.com/
+ 
+ Package: gasket-dkms
+
+From 41177196ab9578a15befbda2cc7c101c8bc6989f Mon Sep 17 00:00:00 2001
+From: Nicola Ferralis <feranick@hotmail.com>
+Date: Mon, 4 Aug 2025 15:07:47 -0400
+Subject: [PATCH 4/5] Further compatibility fixes with Kernel 6.13+
+
+---
+ debian/changelog        | 7 +++++--
+ src/gasket_core.c       | 2 +-
+ src/gasket_page_table.c | 4 ++++
+ 3 files changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/debian/changelog b/debian/changelog
+index d3abe82..a1ff0b3 100644
+--- a/debian/changelog
++++ b/debian/changelog
+@@ -1,6 +1,9 @@
+ gasket-dkms (1.0-18.3) noble; urgency=medium
+-
+-  * Remove deprecated call REMAKE_INITRD, unsupported in kernel 6.14+
++ 
++  * Update ffor Kernel 6.13+
++    - Remove deprecated call REMAKE_INITRD.
++    - Use literal for MODULE_IMPORT_NS.
++    - Use "noop_llseek" instead of deprecated "no_llseek".  
+ 
+  -- Nicola Ferralis <feranick@hotmail.com>  Mon, 04 Aug 2025 14:41:16 -0400
+ 
+diff --git a/src/gasket_core.c b/src/gasket_core.c
+index b1c2726..4e5ad8c 100644
+--- a/src/gasket_core.c
++++ b/src/gasket_core.c
+@@ -1373,7 +1373,7 @@ static long gasket_ioctl(struct file *filp, uint cmd, ulong arg)
+ /* File operations for all Gasket devices. */
+ static const struct file_operations gasket_file_ops = {
+ 	.owner = THIS_MODULE,
+-	.llseek = no_llseek,
++	.llseek = noop_llseek,
+ 	.mmap = gasket_mmap,
+ 	.open = gasket_open,
+ 	.release = gasket_release,
+diff --git a/src/gasket_page_table.c b/src/gasket_page_table.c
+index c9067cb..c1f04b4 100644
+--- a/src/gasket_page_table.c
++++ b/src/gasket_page_table.c
+@@ -54,8 +54,12 @@
+ #include <linux/vmalloc.h>
+ 
+ #if __has_include(<linux/dma-buf.h>)
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 13, 0)
++MODULE_IMPORT_NS("DMA_BUF");
++#else
+ MODULE_IMPORT_NS(DMA_BUF);
+ #endif
++#endif
+ 
+ #include "gasket_constants.h"
+ #include "gasket_core.h"
+
+From be1020c507d56eb2d1c03a92d7c48a751b52af1d Mon Sep 17 00:00:00 2001
+From: Nicola Ferralis <feranick@hotmail.com>
+Date: Mon, 4 Aug 2025 15:44:21 -0400
+Subject: [PATCH 5/5] Do not use noop_llseek instead of no_llseek
+
+They are not completely equivalent. Common practice is to drop no-llseek.
+See:
+https://github.com/torvalds/linux/commit/cb787f4ac0c2e439ea8d7e6387b925f74576bdf8
+https://github.com/torvalds/linux/commit/868941b14441282ba08761b770fc6cad69d5bdb7
+---
+ debian/changelog  | 4 ++--
+ src/gasket_core.c | 1 -
+ 2 files changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/debian/changelog b/debian/changelog
+index a1ff0b3..3032563 100644
+--- a/debian/changelog
++++ b/debian/changelog
+@@ -1,9 +1,9 @@
+-gasket-dkms (1.0-18.3) noble; urgency=medium
++gasket-dkms (1.0-18.4) noble; urgency=medium
+  
+   * Update ffor Kernel 6.13+
+     - Remove deprecated call REMAKE_INITRD.
+     - Use literal for MODULE_IMPORT_NS.
+-    - Use "noop_llseek" instead of deprecated "no_llseek".  
++    - Remove deprecated "no_llseek".  
+ 
+  -- Nicola Ferralis <feranick@hotmail.com>  Mon, 04 Aug 2025 14:41:16 -0400
+ 
+diff --git a/src/gasket_core.c b/src/gasket_core.c
+index 4e5ad8c..febaade 100644
+--- a/src/gasket_core.c
++++ b/src/gasket_core.c
+@@ -1373,7 +1373,6 @@ static long gasket_ioctl(struct file *filp, uint cmd, ulong arg)
+ /* File operations for all Gasket devices. */
+ static const struct file_operations gasket_file_ops = {
+ 	.owner = THIS_MODULE,
+-	.llseek = noop_llseek,
+ 	.mmap = gasket_mmap,
+ 	.open = gasket_open,
+ 	.release = gasket_release,
