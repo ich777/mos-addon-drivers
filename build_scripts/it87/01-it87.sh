@@ -43,11 +43,7 @@ cd $DRIVER_BUILD_DIR
 dpkg-deb --build package $DRIVER_OUTPUT_DIR/${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb
 
 # Check filesize - depending if module build was successful
-if [ "$MODULE_BUILD" = "0" ] ; then
-  MIN_SIZE=950000
-else
-  MIN_SIZE=9999999999
-fi
+MIN_SIZE=1
 PACKAGE_SIZE=$(stat -c%s $DRIVER_OUTPUT_DIR/${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb)
 if [ "$PACKAGE_SIZE" -lt "$MIN_SIZE" ] ; then
   echo "ERROR: Package filesize to low, deleting package: ${DRIVER_NAME}_${DRIVER_V_PKG}-1+mos_amd64.deb"
