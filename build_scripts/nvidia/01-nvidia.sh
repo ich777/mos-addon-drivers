@@ -146,9 +146,13 @@ nvidia_driver() {
   cp /usr/share/egl/egl_external_platform.d/*nvidia*.json $DRIVER_PACKAGE_DIR/usr/share/egl/egl_external_platform.d/
 
   # Fix for gbm symlink
-  cd $DRIVER_PACKAGE_DIR/lib/x86_64-linux-gnu/gbm
+  cd $DRIVER_PACKAGE_DIR/usr/lib/i386-linux-gnu/gbm
   rm -f nvidia-drm_gbm.so
-  ln -sf /lib/x86_64-linux-gnu/libnvidia-allocator.so.1 nvidia-drm_gbm.so
+  ln -sf /usr/lib/i386-linux-gnu/libnvidia-allocator.so.1 nvidia-drm_gbm.so
+
+  cd $DRIVER_PACKAGE_DIR/usr/lib/x86_64-linux-gnu/gbm
+  rm -f nvidia-drm_gbm.so
+  ln -sf /usr/lib/x86_64-linux-gnu/libnvidia-allocator.so.1 nvidia-drm_gbm.so
 
   # Add additional components
   dpkg --root=$DRIVER_PACKAGE_DIR --install $DRIVER_BUILD_DIR/libnvidia-container_${LIBNVIDIA_CONTAINER_V}-1+mos_amd64.deb
